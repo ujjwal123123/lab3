@@ -57,7 +57,7 @@ void printExecutionDetails(Process *processTable) {
         totalWait += waitingTime;
     }
 
-    printf("Avg turnaround: %f, Avg wait: %f\n",
+    printf("Avg turnaround: %f, Avg wait: %f\n\n",
            (double)totalTurnaround / pcount, (double)totalWait / pcount);
 }
 
@@ -129,30 +129,58 @@ void RR(int timeQuantum) {
     free(processTable);
 }
 
-// // Select the process with shortest remaining execution time
-// Process * getShortestProcess(Process *processTable) {
-//     for (int i = 0; i < pcount; i++) {
+// Select the process with shortest remaining execution time.
+// Return NULL if all processes have been executed.
+Process *getShortestProcess(Process *processTable, int currentTime) {
+    Process *shortest = NULL;
+    for (int i = 0; i < pcount; i++) {
+        Process *process = &processTable[i];
+        if (process->remaining != 0) {
+            if (shortest == NULL) {
+                shortest = process;
+            }
+            else if (process->remaining < shortest->remaining &&
+                     process->arrival <= currentTime) {
+                shortest = process;
+            }
+        }
+    }
+    return shortest;
+}
 
-//     }
-// }
+// Shortest Remaining Burst First
+void SRBF() {
+    Process *processTable = (Process *)malloc(sizeof(Process) * pcount);
+    memcpy(processTable, globalProcessTable, sizeof(Process) * pcount);
 
-// // Shortest Remaining Burst First
-// void SRBF(int timeQuantum) {
-//     Process *processTable = (Process *)malloc(sizeof(Process) * pcount);
-//     memcpy(processTable, globalProcessTable, sizeof(Process) * pcount);
+    int currentTime = 0;
 
-//     int currentTime = 0;
+    printf("%-10s %-10s %-10s %-10s %-10s\n", "Name", "Arrival", "Remaining",
+           "Start", "End");
 
-//     printf("%-10s %-10s %-10s %-10s %-10s\n", "Name", "Arrival", "CPU Burst",
-//            "Start", "End");
+    while (true) {
+        Process *process = getShortestProcess(processTable, currentTime);
 
-//     while (true) {
+        if (process == NULL) {
+            break;
+        }
+        else {
+            process->remaining -= 1;
 
-//     }
+            if (currentTime != 0 && process->start == 0) {
+                process->start = currentTime;
+            }
+            process->end = ++currentTime;
 
-//     printExecutionDetails(processTable);
-//     free(processTable);
-// }
+            printf("%-10s %-10d %-10d %-10d %-10d\n", process->name,
+                   process->arrival, process->remaining, process->start,
+                   process->end);
+        }
+    }
+
+    printExecutionDetails(processTable);
+    free(processTable);
+}
 
 int main(int argc, char const *argv[]) {
     if (argc != 2) {
@@ -165,10 +193,12 @@ int main(int argc, char const *argv[]) {
 
     readProcessTable(infile);
 
+    printf("First Come First Serve:\n");
     FCFS();
-    printf("\n");
+    printf("Round robin:\n");
     RR(2);
-    printf("\n");
+    printf("Shortest remaining burst first:\n");
+    SRBF();
 
     return 0;
 }
