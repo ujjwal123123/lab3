@@ -4,6 +4,7 @@
 #include <string.h> // for strcpy
 
 #define MAX_PROCESS 100
+#define START_NOT_SET -1
 
 typedef struct {
     char *name;
@@ -14,11 +15,13 @@ typedef struct {
     int end;
 } Process;
 
-Process globalProcessTable[MAX_PROCESS];
-int pcount = 0; // process count
+Process
+    globalProcessTable[MAX_PROCESS]; // global variable to store process data
+int pcount = 0;                      // process count
 
 int min(int a, int b) { return a < b ? a : b; }
 
+// Parse a text file to globalProcessTable
 void readProcessTable(const char *filename) {
     FILE *infile = fopen(filename, "r");
 
@@ -35,7 +38,8 @@ void readProcessTable(const char *filename) {
             .name = (char *)malloc(sizeof(char) * (strlen(processName)) + 1),
             .arrival = arrival,
             .cpuburst = cpuburst,
-            .remaining = cpuburst};
+            .remaining = cpuburst,
+            .start = START_NOT_SET};
         strcpy(globalProcessTable[pcount++].name, processName);
     }
 }
@@ -91,6 +95,7 @@ void FCFS() {
 
 // Round robin
 void RR(int timeQuantum) {
+    // Copy to globalProcessTable to local variable
     Process *processTable = (Process *)malloc(sizeof(Process) * pcount);
     memcpy(processTable, globalProcessTable, sizeof(Process) * pcount);
 
@@ -106,7 +111,7 @@ void RR(int timeQuantum) {
         for (int i = 0; i < pcount; i++) {
             Process *process = &processTable[i]; // this process
             if (process->arrival <= currentTime && process->remaining != 0) {
-                if (process->start == 0) {
+                if (process->start == START_NOT_SET) {
                     process->start = currentTime;
                 }
                 // time we spend on this process in this iteration
@@ -164,14 +169,15 @@ void SRBF() {
         if (process == NULL) {
             break;
         }
-        else {
-            process->remaining -= 1;
 
-            if (currentTime != 0 && process->start == 0) {
-                process->start = currentTime;
-            }
-            process->end = ++currentTime;
+        process->remaining -= 1;
 
+        if (process->start == START_NOT_SET) {
+            process->start = currentTime;
+        }
+        process->end = ++currentTime;
+
+        if (process->remaining == 0) {
             printf("%-10s %-10d %-10d %-10d %-10d\n", process->name,
                    process->arrival, process->remaining, process->start,
                    process->end);
@@ -193,10 +199,15 @@ int main(int argc, char const *argv[]) {
 
     readProcessTable(infile);
 
+    int RRTimeQuantum;
+    printf("Enter Round Robin Time Quantum: ");
+    scanf(" %d", &RRTimeQuantum);
+    printf("\n");
+
     printf("First Come First Serve:\n");
     FCFS();
     printf("Round robin:\n");
-    RR(2);
+    RR(RRTimeQuantum);
     printf("Shortest remaining burst first:\n");
     SRBF();
 
