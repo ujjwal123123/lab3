@@ -44,29 +44,30 @@ void readProcessTable(const char *filename) {
     }
 }
 
-void printExecutionDetails(Process *processTable) {
+void printStatistics(Process *processTable) {
     int totalTurnaround = 0, totalWait = 0;
 
-    printf("%-20s %-20s %-20s\n", "Name", "Turnaround", "Waiting");
+    printf("\n%-10s %-10s %-20s\n", "Name", "Turnaround", "Waiting");
 
     for (int i = 0; i < pcount; i++) {
         Process *process = &processTable[i]; // this process
         int turnaroundTime = process->end - process->arrival;
         int waitingTime = turnaroundTime - process->cpuburst;
 
-        printf("%-20s %-20d %-20d\n", process->name, turnaroundTime,
+        printf("%-10s %-10d %-10d\n", process->name, turnaroundTime,
                waitingTime);
 
         totalTurnaround += turnaroundTime;
         totalWait += waitingTime;
     }
 
-    printf("Avg turnaround: %f, Avg wait: %f\n\n",
+    printf("\nAverage turnaround time: %f\nAverage wait time: %f\n\n",
            (double)totalTurnaround / pcount, (double)totalWait / pcount);
 }
 
 // First come first serve
 void FCFS() {
+    // Copy to globalProcessTable to local variable
     Process *processTable = (Process *)malloc(sizeof(Process) * pcount);
     memcpy(processTable, globalProcessTable, sizeof(Process) * pcount);
 
@@ -89,7 +90,7 @@ void FCFS() {
         }
     }
 
-    printExecutionDetails(processTable);
+    printStatistics(processTable);
     free(processTable);
 }
 
@@ -130,7 +131,7 @@ void RR(int timeQuantum) {
         }
     }
 
-    printExecutionDetails(processTable);
+    printStatistics(processTable);
     free(processTable);
 }
 
@@ -184,7 +185,7 @@ void SRBF() {
         }
     }
 
-    printExecutionDetails(processTable);
+    printStatistics(processTable);
     free(processTable);
 }
 
@@ -199,16 +200,22 @@ int main(int argc, char const *argv[]) {
 
     readProcessTable(infile);
 
+    printf("-------------------------------------------------\n");
+    printf("First Come First Serve Scheduling\n");
+    printf("-------------------------------------------------\n");
+    FCFS();
+
     int RRTimeQuantum;
     printf("Enter Round Robin Time Quantum: ");
     scanf(" %d", &RRTimeQuantum);
     printf("\n");
-
-    printf("First Come First Serve:\n");
-    FCFS();
-    printf("Round robin:\n");
+    printf("-------------------------------------------------\n");
+    printf("Round robin\n");
+    printf("-------------------------------------------------\n");
     RR(RRTimeQuantum);
-    printf("Shortest remaining burst first:\n");
+    printf("-------------------------------------------------\n");
+    printf("Shortest remaining burst first\n");
+    printf("-------------------------------------------------\n");
     SRBF();
 
     return 0;

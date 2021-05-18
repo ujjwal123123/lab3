@@ -1,0 +1,60 @@
+-------------------------------------------------
+First Come First Serve Scheduling
+-------------------------------------------------
+Name       Arrival    CPU Burst  Start      End       
+P0         0          3          0          3         
+P1         1          6          3          9         
+P2         5          4          9          13        
+P3         7          3          13         16        
+
+Name       Turnaround Waiting             
+P0         3          0         
+P1         8          2         
+P2         8          4         
+P3         9          6         
+
+Average turnaround time: 7.000000
+Average wait time: 3.000000
+
+-------------------------------------------------
+Round robin
+-------------------------------------------------
+With Round Robin Time Quantum of 2 time units
+
+Name       Arrival    Remaining  Start      End       
+P0         0          1          0          2         
+P1         1          4          2          4         
+P0         0          0          0          5         
+P1         1          2          2          7         
+P2         5          2          7          9         
+P3         7          1          9          11        
+P1         1          0          2          13        
+P2         5          0          7          15        
+P3         7          0          9          16        
+
+Name       Turnaround Waiting             
+P0         5          2         
+P1         12         6         
+P2         10         6         
+P3         9          6         
+
+Average turnaround time: 9.000000
+Average wait time: 5.000000
+
+-------------------------------------------------
+Shortest remaining burst first
+-------------------------------------------------
+Name       Arrival    Remaining  Start      End       
+P0         0          0          0          3         
+P1         1          0          3          9         
+P3         7          0          9          12        
+P2         5          0          12         16        
+
+Name       Turnaround Waiting             
+P0         3          0         
+P1         8          2         
+P2         11         7         
+P3         5          2         
+
+Average turnaround time: 6.750000
+Average wait time: 2.750000
